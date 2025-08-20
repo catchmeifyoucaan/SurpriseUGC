@@ -20,6 +20,7 @@ from ..services.veo3_generator import generate_veo3_video, generate_veo3_variati
 from ..services.kwen3_generator import generate_kwen3_video, generate_kwen3_long_form_video, generate_kwen3_variations
 from ..services.multi_model_video_generator import generate_with_best_model, generate_long_form_video, compare_video_models
 from ..services.personal_ai_trainer import train_personal_model, create_complete_personal_video
+from ..services.advanced_ai_photography import zoom_out_on_photo, extreme_upscale_photo, convert_photo_to_video, integrate_product_with_ai_model, create_complete_product_showcase
 
 router = APIRouter(prefix="/quantum-ai", tags=["Quantum AI"])
 
@@ -697,6 +698,179 @@ async def apply_lipsync_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Lipsync failed: {str(e)}"
+        )
+
+
+@router.post("/zoom-out-photo")
+async def zoom_out_photo_endpoint(
+    photo_path: str,
+    zoom_level: str = "extreme_wide",
+    target_aspect_ratio: str = "16:9",
+    enhance_details: bool = True,
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Zoom out on any AI photo with extreme detail preservation"""
+    
+    try:
+        result = await zoom_out_on_photo(
+            photo_path=photo_path,
+            zoom_level=zoom_level,
+            target_aspect_ratio=target_aspect_ratio,
+            enhance_details=enhance_details
+        )
+        
+        return {
+            "success": True,
+            "zoom_result": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Zoom out failed: {str(e)}"
+        )
+
+
+@router.post("/extreme-upscale-photo")
+async def extreme_upscale_photo_endpoint(
+    photo_path: str,
+    upscaling_model: str = "quantum_upscale",
+    preserve_style: bool = True,
+    enhance_colors: bool = True,
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Add extreme detail to any AI photo with quantum upscaling"""
+    
+    try:
+        result = await extreme_upscale_photo(
+            photo_path=photo_path,
+            upscaling_model=upscaling_model,
+            preserve_style=preserve_style,
+            enhance_colors=enhance_colors
+        )
+        
+        return {
+            "success": True,
+            "upscale_result": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Extreme upscaling failed: {str(e)}"
+        )
+
+
+@router.post("/convert-photo-to-video")
+async def convert_photo_to_video_endpoint(
+    photo_path: str,
+    video_model: str = "custom_ai",
+    duration: int = 10,
+    motion_style: str = "cinematic",
+    include_audio: bool = True,
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Turn any AI photo into high-resolution video with motion"""
+    
+    try:
+        result = await convert_photo_to_video(
+            photo_path=photo_path,
+            video_model=video_model,
+            duration=duration,
+            motion_style=motion_style,
+            include_audio=include_audio
+        )
+        
+        return {
+            "success": True,
+            "video_result": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Photo-to-video conversion failed: {str(e)}"
+        )
+
+
+@router.post("/integrate-product-with-ai-model")
+async def integrate_product_endpoint(
+    product_photo: str,
+    ai_model_photo: str,
+    integration_style: str = "natural",
+    product_position: str = "hand",
+    lighting: str = "natural",
+    background: str = "studio",
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Integrate your product photo with AI model holding it"""
+    
+    try:
+        result = await integrate_product_with_ai_model(
+            product_photo=product_photo,
+            ai_model_photo=ai_model_photo,
+            integration_style=integration_style,
+            product_position=product_position,
+            lighting=lighting,
+            background=background
+        )
+        
+        return {
+            "success": True,
+            "integration_result": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Product integration failed: {str(e)}"
+        )
+
+
+@router.post("/create-product-showcase")
+async def create_product_showcase_endpoint(
+    product_photo: str,
+    person_name: str = None,
+    style: str = "viral",
+    include_video: bool = True,
+    include_zoom_effects: bool = True,
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Create complete product showcase with AI model"""
+    
+    try:
+        result = await create_complete_product_showcase(
+            product_photo=product_photo,
+            person_name=person_name,
+            style=style,
+            include_video=include_video,
+            include_zoom_effects=include_zoom_effects
+        )
+        
+        return {
+            "success": True,
+            "showcase_result": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Product showcase creation failed: {str(e)}"
         )
 
 

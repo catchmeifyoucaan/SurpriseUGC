@@ -16,6 +16,7 @@ from ..models.database import User
 from ..core.quantum_engine import process_content_with_quantum_ai
 from ..services.global_cultural_engine import process_global_cultural_adaptation
 from ..services.personalization_engine import create_hyper_personalized_avatar
+from ..services.veo3_generator import generate_veo3_video, generate_veo3_variations
 
 router = APIRouter(prefix="/quantum-ai", tags=["Quantum AI"])
 
@@ -370,6 +371,70 @@ async def quantum_trend_fusion(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Quantum trend fusion failed: {str(e)}"
+        )
+
+
+@router.post("/veo3-generate")
+async def generate_veo3_video_endpoint(
+    prompt: str,
+    duration: int = 15,
+    aspect_ratio: str = "9:16",
+    style: str = "cinematic",
+    quality: str = "high",
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Generate video using Google's Veo3 model"""
+    
+    try:
+        result = await generate_veo3_video(
+            prompt=prompt,
+            duration=duration,
+            aspect_ratio=aspect_ratio,
+            style=style,
+            quality=quality
+        )
+        
+        return {
+            "success": True,
+            "video": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Veo3 generation failed: {str(e)}"
+        )
+
+
+@router.post("/veo3-variations")
+async def generate_veo3_variations_endpoint(
+    base_video_id: str,
+    variations: int = 3,
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Generate variations of a Veo3 video"""
+    
+    try:
+        results = await generate_veo3_variations(
+            base_video_id=base_video_id,
+            variations=variations
+        )
+        
+        return {
+            "success": True,
+            "variations": results,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Veo3 variations failed: {str(e)}"
         )
 
 

@@ -1,0 +1,66 @@
+services:
+  - type: web
+    name: viralforge-backend
+    env: python
+    plan: starter
+    buildCommand: |
+      cd backend
+      pip install -r requirements.txt
+      alembic upgrade head
+    startCommand: |
+      cd backend
+      uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: viralforge-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: viralforge-redis
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: HEYGEN_API_KEY
+        sync: false
+      - key: GOOGLE_AI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_BUCKET
+        value: viralforge-videos
+      - key: S3_REGION
+        value: us-east-1
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: DEBUG
+        value: false
+      - key: BACKEND_CORS_ORIGINS
+        value: https://viralforge.vercel.app,https://viralforge.ai
+
+databases:
+  - name: viralforge-db
+    databaseName: viralforge
+    user: viralforge_user
+    plan: starter
+
+services:
+  - type: redis
+    name: viralforge-redis
+    plan: starter
+    maxmemoryPolicy: allkeys-lru

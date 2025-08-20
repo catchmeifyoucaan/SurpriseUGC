@@ -8,7 +8,7 @@ from sentry_sdk.integrations.fastapi import FastApiIntegration
 
 from app.core.config import settings
 from app.core.database import init_db, check_db_connection
-from app.api import auth, content
+from app.api import auth, content, quantum_ai
 
 
 # Sentry configuration
@@ -142,6 +142,7 @@ async def root():
 # Include API routers
 app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(content.router, prefix=settings.API_V1_STR)
+app.include_router(quantum_ai.router, prefix=settings.API_V1_STR)
 
 
 # Additional API routes for avatars, voices, analytics, etc.

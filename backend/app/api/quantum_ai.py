@@ -22,6 +22,7 @@ from ..services.multi_model_video_generator import generate_with_best_model, gen
 from ..services.personal_ai_trainer import train_personal_model, create_complete_personal_video
 from ..services.advanced_ai_photography import zoom_out_on_photo, extreme_upscale_photo, convert_photo_to_video, integrate_product_with_ai_model, create_complete_product_showcase
 from ..services.viral_content_engine import generate_viral_caption, generate_landing_page_copy, auto_deliver_content, generate_content_calendar
+from ..services.advanced_ai_agents import execute_quantum_strategy, create_viral_content_campaign, optimize_performance_roi
 
 router = APIRouter(prefix="/quantum-ai", tags=["Quantum AI"])
 
@@ -975,6 +976,103 @@ async def auto_deliver_content_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Auto-delivery failed: {str(e)}"
+        )
+
+
+@router.post("/execute-quantum-strategy")
+async def execute_quantum_strategy_endpoint(
+    business_objectives: List[str],
+    target_markets: List[str],
+    budget_constraints: Dict[str, float],
+    timeline: str,
+    current_user: User = Depends(require_role("enterprise")),
+    session: Session = Depends(get_session)
+):
+    """Execute quantum-level strategic planning with all AI agents"""
+    
+    try:
+        result = await execute_quantum_strategy(
+            business_objectives=business_objectives,
+            target_markets=target_markets,
+            budget_constraints=budget_constraints,
+            timeline=timeline
+        )
+        
+        return {
+            "success": True,
+            "quantum_strategy": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Quantum strategy execution failed: {str(e)}"
+        )
+
+
+@router.post("/create-viral-content-campaign")
+async def create_viral_content_campaign_endpoint(
+    campaign_brief: str,
+    target_audience: Dict[str, Any],
+    platforms: List[str],
+    cultural_markets: List[str],
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Create viral content campaign with quantum creativity"""
+    
+    try:
+        result = await create_viral_content_campaign(
+            campaign_brief=campaign_brief,
+            target_audience=target_audience,
+            platforms=platforms,
+            cultural_markets=cultural_markets
+        )
+        
+        return {
+            "success": True,
+            "viral_campaign": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Viral content campaign creation failed: {str(e)}"
+        )
+
+
+@router.post("/optimize-performance-roi")
+async def optimize_performance_roi_endpoint(
+    current_performance: Dict[str, Any],
+    target_metrics: Dict[str, float],
+    budget_allocation: Dict[str, float],
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Optimize performance and ROI with quantum precision"""
+    
+    try:
+        result = await optimize_performance_roi(
+            current_performance=current_performance,
+            target_metrics=target_metrics,
+            budget_allocation=budget_allocation
+        )
+        
+        return {
+            "success": True,
+            "performance_optimization": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Performance optimization failed: {str(e)}"
         )
 
 

@@ -23,6 +23,7 @@ from ..services.personal_ai_trainer import train_personal_model, create_complete
 from ..services.advanced_ai_photography import zoom_out_on_photo, extreme_upscale_photo, convert_photo_to_video, integrate_product_with_ai_model, create_complete_product_showcase
 from ..services.viral_content_engine import generate_viral_caption, generate_landing_page_copy, auto_deliver_content, generate_content_calendar
 from ..services.advanced_ai_agents import execute_quantum_strategy, create_viral_content_campaign, optimize_performance_roi
+from ..services.native_ad_engine import generate_native_ad_variations, test_ad_variations
 
 router = APIRouter(prefix="/quantum-ai", tags=["Quantum AI"])
 
@@ -1073,6 +1074,70 @@ async def optimize_performance_roi_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Performance optimization failed: {str(e)}"
+        )
+
+
+@router.post("/generate-native-ad-variations")
+async def generate_native_ad_variations_endpoint(
+    product_info: Dict[str, Any],
+    target_audience: str,
+    platform: str,
+    cultural_market: str = "united_states",
+    num_variations: int = 100,
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Generate 100+ native ad variations that don't feel like ads"""
+    
+    try:
+        result = await generate_native_ad_variations(
+            product_info=product_info,
+            target_audience=target_audience,
+            platform=platform,
+            cultural_market=cultural_market,
+            num_variations=num_variations
+        )
+        
+        return {
+            "success": True,
+            "native_ad_variations": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Native ad variation generation failed: {str(e)}"
+        )
+
+
+@router.post("/test-ad-variations")
+async def test_ad_variations_endpoint(
+    variations: List[Dict[str, Any]],
+    test_parameters: Dict[str, Any],
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Test ad variations to find optimal performance and cheapest CPC"""
+    
+    try:
+        result = await test_ad_variations(
+            variations=variations,
+            test_parameters=test_parameters
+        )
+        
+        return {
+            "success": True,
+            "ad_testing_results": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Ad variation testing failed: {str(e)}"
         )
 
 

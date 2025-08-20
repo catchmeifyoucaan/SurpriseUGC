@@ -21,6 +21,7 @@ from ..services.kwen3_generator import generate_kwen3_video, generate_kwen3_long
 from ..services.multi_model_video_generator import generate_with_best_model, generate_long_form_video, compare_video_models
 from ..services.personal_ai_trainer import train_personal_model, create_complete_personal_video
 from ..services.advanced_ai_photography import zoom_out_on_photo, extreme_upscale_photo, convert_photo_to_video, integrate_product_with_ai_model, create_complete_product_showcase
+from ..services.viral_content_engine import generate_viral_caption, generate_landing_page_copy, auto_deliver_content, generate_content_calendar
 
 router = APIRouter(prefix="/quantum-ai", tags=["Quantum AI"])
 
@@ -871,6 +872,144 @@ async def create_product_showcase_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Product showcase creation failed: {str(e)}"
+        )
+
+
+@router.post("/generate-viral-caption")
+async def generate_viral_caption_endpoint(
+    platform: str,
+    content_type: str,
+    industry: str = "general",
+    product_info: Dict[str, Any] = None,
+    target_audience: str = None,
+    custom_message: str = None,
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Generate viral caption with hooks, CTAs, and platform optimization"""
+    
+    try:
+        result = await generate_viral_caption(
+            platform=platform,
+            content_type=content_type,
+            industry=industry,
+            product_info=product_info,
+            target_audience=target_audience,
+            custom_message=custom_message
+        )
+        
+        return {
+            "success": True,
+            "viral_caption": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Viral caption generation failed: {str(e)}"
+        )
+
+
+@router.post("/generate-landing-page-copy")
+async def generate_landing_page_copy_endpoint(
+    industry: str,
+    product_info: Dict[str, Any],
+    target_audience: str,
+    conversion_goal: str,
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Generate landing page copy with hooks, CTAs, and conversion optimization"""
+    
+    try:
+        result = await generate_landing_page_copy(
+            industry=industry,
+            product_info=product_info,
+            target_audience=target_audience,
+            conversion_goal=conversion_goal
+        )
+        
+        return {
+            "success": True,
+            "landing_page_copy": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Landing page copy generation failed: {str(e)}"
+        )
+
+
+@router.post("/auto-deliver-content")
+async def auto_deliver_content_endpoint(
+    content_path: str,
+    delivery_spec: Dict[str, Any],
+    caption: str,
+    scheduling: Dict[str, Any] = None,
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Auto-deliver content to specified platform with optimal timing and targeting"""
+    
+    try:
+        result = await auto_deliver_content(
+            content_path=content_path,
+            delivery_spec=delivery_spec,
+            caption=caption,
+            scheduling=scheduling
+        )
+        
+        return {
+            "success": True,
+            "auto_delivery": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Auto-delivery failed: {str(e)}"
+        )
+
+
+@router.post("/generate-content-calendar")
+async def generate_content_calendar_endpoint(
+    business_type: str,
+    industry: str,
+    target_audience: str,
+    goals: List[str],
+    budget: float,
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Generate comprehensive content calendar with viral content strategy"""
+    
+    try:
+        result = await generate_content_calendar(
+            business_type=business_type,
+            industry=industry,
+            target_audience=target_audience,
+            goals=goals,
+            budget=budget
+        )
+        
+        return {
+            "success": True,
+            "content_calendar": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Content calendar generation failed: {str(e)}"
         )
 
 

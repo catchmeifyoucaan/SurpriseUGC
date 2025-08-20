@@ -26,6 +26,10 @@ ViralForge.ai is a comprehensive, production-ready platform that enables e-comme
 - **🎬 Photo-to-Video**: Turn any AI photo into high-resolution video
 - **📦 Product Integration**: AI model holding your product with perfect realism
 - **🚀 Complete Showcase**: Full pipeline from product to viral content
+- **📝 Viral Content Engine**: AI-powered hooks, CTAs, and viral captions
+- **🌐 Landing Page Copy**: Conversion-optimized copy with psychological triggers
+- **🚀 Auto-Delivery System**: Automatic content delivery to ads, landing pages, organic
+- **📅 Content Calendar**: AI-generated content strategy and posting schedule
 - **Trend Research Automation**: AI agents scrape Reddit, X, and competitor data
 - **Real-time Performance Tracking**: Integration with Meta, TikTok, and YouTube ads
 - **Custom Avatar Training**: Create personalized avatars from 60 seconds of footage
@@ -71,6 +75,10 @@ ViralForge.ai is a comprehensive, production-ready platform that enables e-comme
 - **🔍 Advanced Photography**: Zoom out, extreme upscaling, photo-to-video
 - **📦 Product Integration**: AI model + product with perfect realism
 - **🎬 Multi-Format Conversion**: Photo ↔ Video ↔ Audio seamless conversion
+- **📝 Viral Content Engine**: AI-powered hooks, CTAs, hashtags, engagement boosters
+- **🌐 Landing Page Copy**: Conversion-optimized copy with psychological triggers
+- **🚀 Auto-Delivery System**: Platform-optimized content delivery with targeting
+- **📅 Content Calendar**: AI-generated content strategy and viral optimization
 - **LLMs**: OpenAI GPT-4o, Claude 3.5 Sonnet
 - **Avatar Generation**: HeyGen/Synthesia APIs
 - **AI Agents**: LangChain + CrewAI for multi-agent workflows

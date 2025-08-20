@@ -19,6 +19,7 @@ from ..services.personalization_engine import create_hyper_personalized_avatar
 from ..services.veo3_generator import generate_veo3_video, generate_veo3_variations
 from ..services.kwen3_generator import generate_kwen3_video, generate_kwen3_long_form_video, generate_kwen3_variations
 from ..services.multi_model_video_generator import generate_with_best_model, generate_long_form_video, compare_video_models
+from ..services.personal_ai_trainer import train_personal_model, create_complete_personal_video
 
 router = APIRouter(prefix="/quantum-ai", tags=["Quantum AI"])
 
@@ -515,6 +516,224 @@ async def generate_multi_model_video_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Multi-model generation failed: {str(e)}"
+        )
+
+
+@router.post("/train-personal-model")
+async def train_personal_model_endpoint(
+    person_name: str,
+    training_images: List[str],
+    training_type: str = "dreambooth",
+    custom_prompt: str = None,
+    training_steps: int = None,
+    current_user: User = Depends(require_role("enterprise")),
+    session: Session = Depends(get_session)
+):
+    """Train a personal AI model using Dreambooth-style training"""
+    
+    try:
+        result = await train_personal_model(
+            training_images=training_images,
+            person_name=person_name,
+            training_type=training_type,
+            custom_prompt=custom_prompt,
+            training_steps=training_steps
+        )
+        
+        return {
+            "success": True,
+            "training": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Personal model training failed: {str(e)}"
+        )
+
+
+@router.post("/create-personal-video")
+async def create_personal_video_endpoint(
+    prompt: str,
+    person_name: str,
+    script: str,
+    duration: int = 15,
+    style: str = "cinematic",
+    include_captions: bool = True,
+    current_user: User = Depends(require_role("enterprise")),
+    session: Session = Depends(get_session)
+):
+    """Create complete personal video with full AI pipeline"""
+    
+    try:
+        result = await create_complete_personal_video(
+            prompt=prompt,
+            person_name=person_name,
+            script=script,
+            duration=duration,
+            style=style,
+            include_captions=include_captions
+        )
+        
+        return {
+            "success": True,
+            "personal_video": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Personal video creation failed: {str(e)}"
+        )
+
+
+@router.post("/upscale-preserve-resemblance")
+async def upscale_image_endpoint(
+    image_path: str,
+    target_resolution: str = "4K",
+    upscaling_model: str = "custom_ai",
+    preserve_features: bool = True,
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Upscale image while preserving person resemblance"""
+    
+    try:
+        from ..services.personal_ai_trainer import personal_ai_trainer
+        
+        result = await personal_ai_trainer.upscale_image_preserve_resemblance(
+            image_path=image_path,
+            target_resolution=target_resolution,
+            upscaling_model=upscaling_model,
+            preserve_features=preserve_features
+        )
+        
+        return {
+            "success": True,
+            "upscaled_image": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Image upscaling failed: {str(e)}"
+        )
+
+
+@router.post("/synthesize-personal-voice")
+async def synthesize_voice_endpoint(
+    text: str,
+    person_name: str,
+    voice_model: str = "custom_voice",
+    emotion: str = "neutral",
+    speed: float = 1.0,
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Synthesize voice that sounds like the person"""
+    
+    try:
+        from ..services.personal_ai_trainer import personal_ai_trainer
+        
+        result = await personal_ai_trainer.synthesize_personal_voice(
+            text=text,
+            person_name=person_name,
+            voice_model=voice_model,
+            emotion=emotion,
+            speed=speed
+        )
+        
+        return {
+            "success": True,
+            "voice": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Voice synthesis failed: {str(e)}"
+        )
+
+
+@router.post("/apply-advanced-lipsync")
+async def apply_lipsync_endpoint(
+    video_path: str,
+    audio_path: str,
+    person_name: str,
+    lipsync_model: str = "custom_lipsync",
+    sync_precision: float = 0.99,
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Apply advanced lipsync with perfect synchronization"""
+    
+    try:
+        from ..services.personal_ai_trainer import personal_ai_trainer
+        
+        result = await personal_ai_trainer.apply_advanced_lipsync(
+            video_path=video_path,
+            audio_path=audio_path,
+            person_name=person_name,
+            lipsync_model=lipsync_model,
+            sync_precision=sync_precision
+        )
+        
+        return {
+            "success": True,
+            "lipsync": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Lipsync failed: {str(e)}"
+        )
+
+
+@router.post("/add-smart-captions")
+async def add_captions_endpoint(
+    video_path: str,
+    captions: List[Dict[str, Any]],
+    style: str = "modern",
+    language: str = "en",
+    auto_sync: bool = True,
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Add smart captions with AI-powered synchronization"""
+    
+    try:
+        from ..services.personal_ai_trainer import personal_ai_trainer
+        
+        result = await personal_ai_trainer.add_smart_captions(
+            video_path=video_path,
+            captions=captions,
+            style=style,
+            language=language,
+            auto_sync=auto_sync
+        )
+        
+        return {
+            "success": True,
+            "captions": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Caption addition failed: {str(e)}"
         )
 
 

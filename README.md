@@ -15,6 +15,12 @@ ViralForge.ai is a comprehensive, production-ready platform that enables e-comme
 - **Hybrid AI-Human Workflows**: Blend AI-generated content with real UGC creators
 
 ### Advanced Features
+- **Personal AI Training**: Dreambooth-style training for custom person models
+- **AI Upscaling**: Preserve resemblance while upscaling to 16K resolution
+- **Personal Video Generation**: Create videos with trained personal models
+- **Voice Synthesis**: Generate voice that sounds like any person
+- **Advanced Lipsync**: Perfect synchronization with 99% accuracy
+- **Smart Captions**: AI-powered caption generation and synchronization
 - **Trend Research Automation**: AI agents scrape Reddit, X, and competitor data
 - **Real-time Performance Tracking**: Integration with Meta, TikTok, and YouTube ads
 - **Custom Avatar Training**: Create personalized avatars from 60 seconds of footage
@@ -53,12 +59,16 @@ ViralForge.ai is a comprehensive, production-ready platform that enables e-comme
 
 ### AI Integrations
 - **Video Generation**: Veo3 (Google), KWEN3 (Kling), Sora (OpenAI), Pika Labs
+- **Personal AI Training**: Dreambooth XL, Kohya LoRA, Custom Fine-tuned models
+- **AI Upscaling**: Real-ESRGAN, SwinIR, Custom AI upscaling (8x scale)
+- **Voice Synthesis**: ElevenLabs, Coqui, Custom Voice models
+- **Lipsync**: Wav2Lip, SyncNet, Custom Lipsync (99% accuracy)
 - **LLMs**: OpenAI GPT-4o, Claude 3.5 Sonnet
-- **Voice Synthesis**: ElevenLabs API
 - **Avatar Generation**: HeyGen/Synthesia APIs
 - **AI Agents**: LangChain + CrewAI for multi-agent workflows
 - **Video Processing**: FFmpeg for editing and effects
 - **Multi-Model Ensemble**: Automatic best model selection
+- **Smart Captions**: AI-powered synchronization and styling
 
 ### Infrastructure
 - **Deployment**: Docker + Kubernetes

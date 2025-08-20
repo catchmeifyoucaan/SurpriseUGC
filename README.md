@@ -52,11 +52,13 @@ ViralForge.ai is a comprehensive, production-ready platform that enables e-comme
 - **Forms**: React Hook Form with Zod validation
 
 ### AI Integrations
+- **Video Generation**: Veo3 (Google), KWEN3 (Kling), Sora (OpenAI), Pika Labs
 - **LLMs**: OpenAI GPT-4o, Claude 3.5 Sonnet
 - **Voice Synthesis**: ElevenLabs API
 - **Avatar Generation**: HeyGen/Synthesia APIs
 - **AI Agents**: LangChain + CrewAI for multi-agent workflows
 - **Video Processing**: FFmpeg for editing and effects
+- **Multi-Model Ensemble**: Automatic best model selection
 
 ### Infrastructure
 - **Deployment**: Docker + Kubernetes

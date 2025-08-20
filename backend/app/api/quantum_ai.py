@@ -17,6 +17,8 @@ from ..core.quantum_engine import process_content_with_quantum_ai
 from ..services.global_cultural_engine import process_global_cultural_adaptation
 from ..services.personalization_engine import create_hyper_personalized_avatar
 from ..services.veo3_generator import generate_veo3_video, generate_veo3_variations
+from ..services.kwen3_generator import generate_kwen3_video, generate_kwen3_long_form_video, generate_kwen3_variations
+from ..services.multi_model_video_generator import generate_with_best_model, generate_long_form_video, compare_video_models
 
 router = APIRouter(prefix="/quantum-ai", tags=["Quantum AI"])
 
@@ -406,6 +408,139 @@ async def generate_veo3_video_endpoint(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Veo3 generation failed: {str(e)}"
+        )
+
+
+@router.post("/kwen3-generate")
+async def generate_kwen3_video_endpoint(
+    prompt: str,
+    duration: int = 15,
+    aspect_ratio: str = "9:16",
+    style: str = "cinematic",
+    quality: str = "ultra_hd",
+    motion_scale: float = 1.0,
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Generate video using Kling's KWEN3 model"""
+    
+    try:
+        result = await generate_kwen3_video(
+            prompt=prompt,
+            duration=duration,
+            aspect_ratio=aspect_ratio,
+            style=style,
+            quality=quality,
+            motion_scale=motion_scale
+        )
+        
+        return {
+            "success": True,
+            "video": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"KWEN3 generation failed: {str(e)}"
+        )
+
+
+@router.post("/kwen3-long-form")
+async def generate_kwen3_long_form_endpoint(
+    prompt: str,
+    duration: int = 60,
+    aspect_ratio: str = "16:9",
+    quality: str = "ultra_hd",
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Generate long-form video using KWEN3"""
+    
+    try:
+        result = await generate_kwen3_long_form_video(
+            prompt=prompt,
+            duration=duration,
+            aspect_ratio=aspect_ratio,
+            quality=quality
+        )
+        
+        return {
+            "success": True,
+            "video": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"KWEN3 long-form generation failed: {str(e)}"
+        )
+
+
+@router.post("/multi-model-generate")
+async def generate_multi_model_video_endpoint(
+    prompt: str,
+    duration: int = 15,
+    aspect_ratio: str = "9:16",
+    style: str = "cinematic",
+    quality: str = "high",
+    use_multiple_models: bool = True,
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Generate video using the best available model(s)"""
+    
+    try:
+        result = await generate_with_best_model(
+            prompt=prompt,
+            duration=duration,
+            aspect_ratio=aspect_ratio,
+            style=style,
+            quality=quality,
+            use_multiple_models=use_multiple_models
+        )
+        
+        return {
+            "success": True,
+            "result": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Multi-model generation failed: {str(e)}"
+        )
+
+
+@router.post("/compare-models")
+async def compare_video_models_endpoint(
+    prompt: str,
+    duration: int = 15,
+    current_user: User = Depends(require_role("pro")),
+    session: Session = Depends(get_session)
+):
+    """Compare different video generation models"""
+    
+    try:
+        result = await compare_video_models(prompt, duration)
+        
+        return {
+            "success": True,
+            "comparison": result,
+            "user_id": current_user.id,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Model comparison failed: {str(e)}"
         )
 
 

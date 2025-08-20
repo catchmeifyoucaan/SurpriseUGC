@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     ELEVENLABS_API_KEY: Optional[str] = None
     HEYGEN_API_KEY: Optional[str] = None
     GOOGLE_AI_API_KEY: Optional[str] = None
+    KLING_API_KEY: Optional[str] = None
     ANTHROPIC_API_KEY: Optional[str] = None
     
     # External APIs

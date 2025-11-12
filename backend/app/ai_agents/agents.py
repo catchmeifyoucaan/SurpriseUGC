@@ -10,8 +10,10 @@ import json
 import requests
 from bs4 import BeautifulSoup
 import re
+import asyncio
 
 from ..core.config import settings
+from ..services.openai_service import openai_service
 
 
 class TrendResearchTool(BaseTool):
@@ -421,30 +423,40 @@ def generate_viral_content(product_info: str, target_audience: str, platform: st
 
 
 def generate_script_variants(product_info: str, target_audience: str, count: int = 5) -> List[Dict]:
-    """Generate multiple script variants"""
+    """Generate multiple script variants using real OpenAI GPT-4"""
     try:
-        # Use the script generation tool directly
-        tool = ScriptGenerationTool()
-        
-        # Mock research data for now
-        research_data = json.dumps({
-            "trending_topics": [{"topic": "productivity", "trend_score": 85}],
-            "pain_points": ["I need help staying focused"],
-            "viral_patterns": [{"pattern": "hook + problem + solution", "effectiveness": 0.85}]
-        })
-        
-        result = tool._run(research_data, product_info, target_audience)
-        scripts = json.loads(result)
-        
-        # Generate additional variants if needed
-        while len(scripts.get("scripts", [])) < count:
-            # Add more script variants
-            additional_script = {
-                "type": f"variant_{len(scripts['scripts']) + 1}",
-                "script": f"New variant for {product_info} targeting {target_audience}"
-            }
-            scripts["scripts"].append(additional_script)
-        
-        return scripts.get("scripts", [])[:count]
+        # Use real OpenAI service
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            # If event loop is already running, create a new task
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(
+                    asyncio.run,
+                    openai_service.generate_viral_script(
+                        product_info=product_info,
+                        target_audience=target_audience,
+                        platform="tiktok",
+                        count=count
+                    )
+                )
+                result = future.result()
+        else:
+            # Run directly if no event loop
+            result = loop.run_until_complete(
+                openai_service.generate_viral_script(
+                    product_info=product_info,
+                    target_audience=target_audience,
+                    platform="tiktok",
+                    count=count
+                )
+            )
+
+        if result.get("success"):
+            return result.get("scripts", [])
+        else:
+            # Fallback to mock if OpenAI fails
+            return result.get("scripts", [{"error": result.get("error", "Unknown error")}])
+
     except Exception as e:
         return [{"error": f"Error generating scripts: {str(e)}"}]

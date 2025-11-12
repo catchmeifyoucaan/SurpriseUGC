@@ -1,6 +1,7 @@
 from typing import Optional, List
 from pydantic import BaseSettings, validator
 import os
+import secrets
 
 
 class Settings(BaseSettings):
@@ -8,13 +9,14 @@ class Settings(BaseSettings):
     APP_NAME: str = "ViralForge.ai"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
-    
+    ENVIRONMENT: str = "development"  # development, staging, production
+
     # API Configuration
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "ViralForge.ai API"
-    
-    # Security
-    SECRET_KEY: str = "your-secret-key-change-in-production"
+
+    # Security (MUST be set via environment variables in production)
+    SECRET_KEY: str = os.getenv("SECRET_KEY", secrets.token_urlsafe(32) if os.getenv("ENVIRONMENT") != "production" else "")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
     
@@ -87,6 +89,30 @@ class Settings(BaseSettings):
     DEFAULT_AVATAR_COUNT: int = 1000
     CUSTOM_AVATAR_TRAINING_TIME: int = 3600  # 1 hour in seconds
     
+    @validator("SECRET_KEY")
+    def validate_secret_key(cls, v, values):
+        """Ensure SECRET_KEY is properly set in production"""
+        environment = values.get("ENVIRONMENT", "development")
+
+        if environment == "production":
+            if not v or len(v) < 32:
+                raise ValueError(
+                    "SECRET_KEY must be set and at least 32 characters in production. "
+                    "Generate one with: python -c 'import secrets; print(secrets.token_urlsafe(32))'"
+                )
+            # Check for common insecure defaults
+            insecure_defaults = [
+                "your-secret-key-change-in-production",
+                "secret",
+                "changeme",
+                "password",
+                "12345"
+            ]
+            if any(insecure in v.lower() for insecure in insecure_defaults):
+                raise ValueError("SECRET_KEY appears to be using an insecure default value")
+
+        return v
+
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v):
         if isinstance(v, str) and not v.startswith("["):
@@ -94,13 +120,33 @@ class Settings(BaseSettings):
         elif isinstance(v, (list, str)):
             return v
         raise ValueError(v)
-    
+
     @validator("DATABASE_URL", pre=True)
     def validate_database_url(cls, v):
         if not v:
             raise ValueError("DATABASE_URL is required")
+        # Warn if using default insecure credentials
+        if "user:password" in v:
+            import warnings
+            warnings.warn(
+                "DATABASE_URL appears to use default credentials. "
+                "Please update with secure credentials in production.",
+                UserWarning
+            )
         return v
-    
+
+    @validator("OPENAI_API_KEY")
+    def validate_openai_key(cls, v, values):
+        """Warn if OpenAI key is missing when AI agents are enabled"""
+        if values.get("ENABLE_AI_AGENTS") and not v:
+            import warnings
+            warnings.warn(
+                "OPENAI_API_KEY is not set but AI agents are enabled. "
+                "AI features will not work properly.",
+                UserWarning
+            )
+        return v
+
     class Config:
         env_file = ".env"
         case_sensitive = True

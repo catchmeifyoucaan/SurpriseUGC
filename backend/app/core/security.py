@@ -233,43 +233,34 @@ def reset_monthly_usage(session: Session):
     session.commit()
 
 
-# Rate limiting utilities
-class RateLimiter:
-    """Simple rate limiter for API endpoints"""
-    
-    def __init__(self):
-        self.requests = {}
-    
-    def is_allowed(self, user_id: str, limit: int, window: int = 60) -> bool:
-        """Check if user is within rate limit"""
-        now = datetime.utcnow()
-        key = f"{user_id}_{window}"
-        
-        if key not in self.requests:
-            self.requests[key] = []
-        
-        # Remove old requests outside the window
-        self.requests[key] = [
-            req_time for req_time in self.requests[key]
-            if (now - req_time).seconds < window
-        ]
-        
-        # Check if under limit
-        if len(self.requests[key]) < limit:
-            self.requests[key].append(now)
-            return True
-        
-        return False
+# Import Redis rate limiter
+from .redis_rate_limiter import rate_limiter as redis_rate_limiter
 
 
-# Global rate limiter instance
-rate_limiter = RateLimiter()
+def check_rate_limit(user_id: str, limit: int = 60, window: int = 60, method: str = "sliding"):
+    """
+    Check rate limit for user using distributed Redis rate limiter
 
+    Args:
+        user_id: User identifier
+        limit: Maximum requests allowed
+        window: Time window in seconds
+        method: "fixed" or "sliding" window (default: sliding for better accuracy)
 
-def check_rate_limit(user_id: str, limit: int = 60, window: int = 60):
-    """Check rate limit for user"""
-    if not rate_limiter.is_allowed(user_id, limit, window):
+    Raises:
+        HTTPException: If rate limit exceeded
+    """
+    if not redis_rate_limiter.is_allowed(user_id, limit, window, method):
+        # Get status for helpful error message
+        status_info = redis_rate_limiter.get_status(user_id, limit, window)
+
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Rate limit exceeded"
+            detail="Rate limit exceeded",
+            headers={
+                "X-RateLimit-Limit": str(limit),
+                "X-RateLimit-Remaining": str(status_info.get("remaining", 0)),
+                "X-RateLimit-Reset": status_info.get("reset_at", ""),
+                "Retry-After": str(window)
+            }
         )

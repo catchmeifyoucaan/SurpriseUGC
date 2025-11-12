@@ -1,0 +1,187 @@
+# Docker Compose for ViralForge.ai
+# Complete development and production environment
+
+version: '3.8'
+
+services:
+  # ===========================================================================
+  # DATABASE - PostgreSQL
+  # ===========================================================================
+  postgres:
+    image: postgres:14-alpine
+    container_name: viralforge-postgres
+    environment:
+      POSTGRES_DB: viralforge
+      POSTGRES_USER: viralforge_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U viralforge_user -d viralforge"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - viralforge-network
+
+  # ===========================================================================
+  # CACHE - Redis
+  # ===========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: viralforge-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-changeme}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - viralforge-network
+
+  # ===========================================================================
+  # BACKEND - FastAPI
+  # ===========================================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: viralforge-backend
+    environment:
+      - DATABASE_URL=postgresql://viralforge_user:${POSTGRES_PASSWORD:-changeme}@postgres:5432/viralforge
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-changeme}@redis:6379/0
+      - SECRET_KEY=${SECRET_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - GOOGLE_AI_API_KEY=${GOOGLE_AI_API_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - S3_BUCKET=${S3_BUCKET:-viralforge-videos}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - SENTRY_DSN=${SENTRY_DSN}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - DEBUG=${DEBUG:-true}
+      - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-http://localhost:3000}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+    networks:
+      - viralforge-network
+
+  # ===========================================================================
+  # FRONTEND - Next.js
+  # ===========================================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    container_name: viralforge-frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - viralforge-network
+
+  # ===========================================================================
+  # WORKER - Celery (for background tasks)
+  # ===========================================================================
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: viralforge-celery-worker
+    command: celery -A app.celery_app worker --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql://viralforge_user:${POSTGRES_PASSWORD:-changeme}@postgres:5432/viralforge
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-changeme}@redis:6379/0
+      - SECRET_KEY=${SECRET_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    networks:
+      - viralforge-network
+
+  # ===========================================================================
+  # MONITORING - Prometheus (optional)
+  # ===========================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: viralforge-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    restart: unless-stopped
+    networks:
+      - viralforge-network
+    profiles:
+      - monitoring
+
+  # ===========================================================================
+  # MONITORING - Grafana (optional)
+  # ===========================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: viralforge-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - viralforge-network
+    profiles:
+      - monitoring
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+networks:
+  viralforge-network:
+    driver: bridge
